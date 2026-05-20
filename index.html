@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -9,6 +8,7 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Hind', sans-serif; background-color: #cbd5e1; margin: 0; padding: 10px; }
@@ -20,9 +20,16 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // CONFIGURATION: 
+        const SUPABASE_URL = "https://socyjcfnvkfuntqbplxh.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jGTD3v4o8EbrJmWWFnttFw_qDUkrAgF"; 
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const App = () => {
-            // जब भी आप गिटहब में रेट बदलें, यहाँ तारीख भी बदल दें
-            const lastUpdatedDate = "20/05/2026"; 
+            const [pages, setPages] = React.useState([]);
+            const [lastUpdatedDate, setLastUpdatedDate] = React.useState("");
+            const [loading, setLoading] = React.useState(true);
 
             const storeName = "RAJ KIRYANA STORE";
             const sinceText = "Since 1995";
@@ -34,72 +41,31 @@
             const contact1 = "9466546715";
             const contact2 = "9812438025";
 
-            const pages = [
-                {
-                    id: 1,
-                    categories: [
-                        { 
-                            id: 'p1-oil', name: 'चीनी, तेल व राशन (KIRYANA)', side: 'left', 
-                            items: [
-                                { name: 'बादाम (Badam)', varieties: [{ name: 'Gurbandi', price: '1050', unit: 'kg' }, { name: 'American', price: '880', unit: 'kg' }] },
-                                { name: 'चीनी', varieties: [{ name: 'Double रिफाइंड', price: '45', unit: 'kg' }, { name: 'Single रिफाइंड', price: '44', unit: 'kg' }] },
-                                { name: 'गुड़', varieties: [{ name: 'पशु पेटी', price: '465', unit: 'पेटी' }, { name: 'खाने का', price: '60', unit: 'kg' }] },
-                                { name: 'छोला', varieties: [{ name: 'बारीक', price: '75', unit: 'kg' }, { name: 'मीडियम', price: '85', unit: 'kg' }, { name: 'मोटा', price: '110', unit: 'kg' }] },
-                                { name: 'रिफाइंड', varieties: [{ name: 'महाकोश', price: '132', unit: 'ltr' }, { name: 'Fortune', price: '142', unit: 'ltr' }, { name: 'Fortune पीपा', price: '2400', unit: 'Can' }] },
-                                { name: 'तेल सरसों', varieties: [{ name: 'Variety 1 बोतल', price: '140', unit: 'Btl' }, { name: 'Variety 2 बोतल', price: '150', unit: 'Btl' }, { name: 'पीपा 15L', price: '2183', unit: 'Can' }] },
-                                { name: 'नमक', varieties: [{ name: 'निरमा', price: '18', unit: 'kg' }, { name: 'Tata', price: '28', unit: 'kg' }, { name: 'TaTaV', price: '10', unit: 'kg' }] }
-                            ] 
-                        },
-                        { 
-                            id: 'p1-dal', name: 'दालें व अनाज (KIRYANA DAL)', side: 'right', 
-                            items: [
-                                { name: 'चना दाल', varieties: [{ price: '70', unit: 'kg' }] },
-                                { name: 'बेसन', varieties: [{ price: '75', unit: 'kg' }] },
-                                { name: 'मैदा', varieties: [{ price: '32', unit: 'kg' }] },
-                                { name: 'लाल दाल', varieties: [{ name: 'Variety 1', price: '75', unit: 'kg' }, { name: 'Variety 2', price: '85', unit: 'kg' }] },
-                                { name: 'मूंग छिलका', varieties: [{ name: 'Variety 1', price: '100', unit: 'kg' }, { name: 'Variety 2', price: '110', unit: 'kg' }] },
-                                { name: 'मूंग धोवा', varieties: [{ name: 'Variety 1', price: '95', unit: 'kg' }, { name: 'Variety 2', price: '110', unit: 'kg' }] },
-                                { name: 'Mix दाल', varieties: [{ price: '100', unit: 'kg' }] },
-                                { name: 'मेथी मशीन क्लीन', varieties: [{ price: '75', unit: 'kg' }] }
-                            ] 
+            React.useEffect(() => {
+                const getLivePrices = async () => {
+                    try {
+                        let { data, error } = await supabase
+                            .from('daily_bhav')
+                            .select('*')
+                            .eq('id', 1)
+                            .single();
+                        
+                        if (data) {
+                            setPages(data.price_data);
+                            setLastUpdatedDate(data.last_updated);
                         }
-                    ]
-                },
-                {
-                    id: 2,
-                    categories: [
-                        { 
-                            id: 'p2-left', name: 'चावल व चना (RICE & CHANA)', side: 'left', 
-                            items: [
-                                { name: 'चावल (Rice)', varieties: [
-                                    { name: 'खीर 1', price: '35', unit: 'kg' }, { name: 'खीर 2', price: '38', unit: 'kg' },
-                                    { name: 'सैला 1', price: '35', unit: 'kg' }, { name: 'सैला 2', price: '40', unit: 'kg' },
-                                    { name: 'स्टीम', price: '45', unit: 'kg' }, { name: 'पैकिंग 1', price: '50', unit: 'kg' },
-                                    { name: 'Loose', price: '55', unit: 'kg' }, { name: 'पैकिंग 2', price: '60', unit: 'kg' },
-                                    { name: 'बासमती', price: '90', unit: 'kg' }, { name: 'बासमती Super', price: '110', unit: 'kg' }
-                                ] },
-                                { name: 'चना (Chana)', varieties: [
-                                    { name: 'देशी', price: '62', unit: 'kg' }, { name: 'कट्टा', price: '5900', unit: '100kg' },
-                                    { name: 'MP', price: '70', unit: 'kg' }, { name: 'MP कट्टा', price: '6800', unit: '100kg' }
-                                ] }
-                            ] 
-                        },
-                        { 
-                            id: 'p2-pashu', name: 'पशु आहार (PASHU AHAR)', side: 'right', 
-                            items: [
-                                { name: 'Hafed feed 50kg', varieties: [{ price: '1220', unit: 'Bag' }] },
-                                { name: 'गोदरेज feed', varieties: [{ price: '950', unit: 'Bag' }] },
-                                { name: 'Godrej Champion 8000', varieties: [{ price: '1460', unit: 'Bag' }] },
-                                { name: 'Mixtur 40kg', varieties: [{ price: '850', unit: 'Bag' }] },
-                                { name: 'खल बिनोला 40kg', varieties: [{ name: 'Variety 1', price: '1850', unit: 'Bag' }, { name: 'Variety 2', price: '2000', unit: 'Bag' }] },
-                                { name: 'बिनोला छिलकी', varieties: [{ name: 'Variety 1 43kg', price: '2250', unit: 'Bag' }, { name: 'Variety 2 44kg', price: '2500', unit: 'Bag' }, { name: 'Variety 4 45kg', price: '2600', unit: 'Bag' }] },
-                                { name: 'चना छिलका 20kg', varieties: [{ price: '660', unit: 'Bag' }] },
-                                { name: 'काला बिनोला डबल छिलाई', varieties: [{ price: '2460', unit: 'Bag' }] }
-                            ] 
-                        }
-                    ]
-                }
-            ];
+                    } catch (err) {
+                        console.error("Error pulling pricing structures:", err);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+                getLivePrices();
+            }, []);
+
+            if (loading || pages.length === 0) {
+                return <div className="text-center font-bold p-10 text-slate-800">ताज़ा भाव लोड हो रहे हैं... कृपया प्रतीक्षा करें।</div>;
+            }
 
             return (
                 <div className="flex flex-col items-center p-2 sm:p-4 bg-[#cbd5e1] min-h-screen">
